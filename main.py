@@ -15,12 +15,8 @@ headers = {"Authorization": f"Bearer {API_KEY}"}
 
 # Function to query gender classification API
 @st.cache_data
-def query_gender(image):
+def query_gender(image_bytes):
     try:
-        image = image.convert('RGB')
-        image_bytes = io.BytesIO()
-        image.save(image_bytes, format='JPEG')
-        image_bytes.seek(0)
         response = requests.post(API_URL_GENDER, headers=headers, data=image_bytes)
         response.raise_for_status()
         return response.json()
@@ -28,11 +24,11 @@ def query_gender(image):
         st.error(f"Error: {e}")
         return None
 
-# Function to query gender classification API
+# Function to query AI image detector API
 @st.cache_data
-def query_gender(image_bytes):
+def query_detector(image_bytes):
     try:
-        response = requests.post(API_URL_GENDER, headers=headers, data=image_bytes)
+        response = requests.post(API_URL_DETECTOR, headers=headers, data=image_bytes)
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
@@ -46,13 +42,11 @@ def gender_classification():
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
         st.image(image, caption='Uploaded Image.', use_container_width=True)
-
-        # Convert image to bytes
+        
         image_bytes = io.BytesIO()
         image.convert('RGB').save(image_bytes, format='JPEG')
         image_bytes.seek(0)
 
-        # Call the cached function with bytes instead of an image object
         with st.spinner('Classifying...'):
             result = query_gender(image_bytes.getvalue())
 
